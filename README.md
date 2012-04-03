@@ -58,3 +58,11 @@ See the content of the `examples/` folder for more details.
 ## License
 
 Simplified BSD.
+
+
+## History
+
+This project started at the [PyCon 2012 PyData
+sprint](http://wiki.ipython.org/PyCon12Sprint)
+as a set of proof of concept [IPython.parallel
+scripts](https://github.com/ogrisel/pycon-pydata-sprint).
