@@ -1,3 +1,24 @@
+"""
+============================================
+Numpy array broadcasting with memory mapping
+============================================
+
+This example demonstrates the usage of the
+:func:`pyrallel.broadcast.bcast_memmap` function to efficiently give a
+read access to the same data array to each engine of the cluster.
+
+This function tries to spare the cluster resources (network and RAM) as
+much as possible: a digest is first computed on the original data (living
+in the client python process) and each engine of the cluster is asked
+which store it is associated to and whether the store already as the data.
+
+The data is then sent once to each datastore missing the data and
+materialized there as a numpy.memmap array. Each engine of the view
+can thus load the data in their active namespace using shared memory:
+if several engines happen to run on the same node, the data will be only
+loaded once in memory.
+
+"""
 import sys
 import numpy as np
 
