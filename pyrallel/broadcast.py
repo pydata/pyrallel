@@ -42,9 +42,10 @@ def get_datastore_path(create_if_missing=False):
 
 
 @parallel.util.interactive
-def load_memmap(name, fname, dtype, shape):
+def load_memmap(name, fname, dtype, shape, order):
     import numpy
-    data = numpy.memmap(fname, shape=shape, dtype=dtype, mode='copyonwrite')
+    data = numpy.memmap(fname, shape=shape, dtype=dtype, mode='copyonwrite',
+                        order=order)
     globals().update({name: data})
 
 
@@ -97,8 +98,9 @@ def save_for_memmap(data, filename, flush=False):
         # file already exists, nothing to do
         return
 
+    order = 'F' if data.flags['F_CONTIGUOUS'] else 'C'
     mm_data = numpy.memmap(filename, mode='w+', dtype=data.dtype,
-                           shape=data.shape, order=data.order)
+                           shape=data.shape, order=order)
     mm_data[:] = data
     if flush:
         mm_data.flush()
@@ -112,8 +114,8 @@ def datastore_mapping(view, identify_datastore_func, checksum):
     # reverse mapping, so we have a list of engine IDs per datastore
     engines_by_datastore = defaultdict(list)
     paths = {}
-    for eid, (datastore_id, path, exists) in mapping.iteritems():
-        engines_by_datastore[datastore_id].append(eid)
+    for engine_id, (datastore_id, path, exists) in mapping.iteritems():
+        engines_by_datastore[datastore_id].append(engine_id)
         paths[datastore_id] = (path, exists)
 
     return local_store_id, engines_by_datastore, paths
@@ -162,6 +164,7 @@ def bcast_memmap(view, name, data,
 
     # checksum array for filename
     checksum = md5(data).hexdigest()
+    order = 'F' if data.flags['F_CONTIGUOUS'] else 'C'
 
     local_store_id, engines_by_datastore, paths = datastore_mapping(
         view, identify_datastore_func, checksum)
@@ -201,7 +204,7 @@ def bcast_memmap(view, name, data,
             # datastore
             other = client[targets]
             ar = other.apply_async(load_memmap, name, fname,
-                                   data.dtype, data.shape)
+                                   data.dtype, data.shape, order)
             ars.append(ar)
 
         else:
@@ -213,7 +216,7 @@ def bcast_memmap(view, name, data,
                 fname = data.filename
             # local engines, load from original memmapped file
             ar = client[targets].apply_async(
-                load_memmap, name, fname, data.dtype, data.shape)
+                load_memmap, name, fname, data.dtype, data.shape, order)
             ars.append(ar)
 
     return ars, engines_by_datastore
