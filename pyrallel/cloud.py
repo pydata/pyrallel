@@ -61,7 +61,7 @@ def deploy_cluster(cloud, name='pyrallel', n_nodes=1, image=None, size=None,
     image = image if image is not None else conn.list_images()[0]
     size = size if size is not None else conn.list_sizes()[0]
 
-    print "Destroying %d nodes" % n_nodes
+    print "Deploying %d nodes" % n_nodes
     # TODO: use parallel thread to launch the deployment
     t0 = time()
     for i in range(n_nodes):
@@ -75,7 +75,7 @@ def destroy_cluster(cloud, name='pyrallel'):
     """Destroy all nodes with the provided name"""
     conn = get_connection(cloud) if isinstance(cloud, basestring) else cloud
     nodes = [n for n in conn.list_nodes() if n.name == name]
-    print "Deploying %d nodes" % len(nodes)
+    print "Destroying %d nodes" % len(nodes)
     # TODO: parallelize me!
     t0 = time()
     for n in nodes:
