@@ -6,13 +6,20 @@ from time import time
 import os
 
 from libcloud.compute.types import Provider
+from libcloud.compute.types import NodeState
 from libcloud.compute.providers import get_driver
 from libcloud.compute.deployment import MultiStepDeployment
 from libcloud.compute.deployment import ScriptDeployment
 from libcloud.compute.deployment import SSHKeyDeployment
 
 
-UBUNTU_DEPLOYMENT = """`
+# Use the local folder of the ssh user of the node to put the deployment
+# script rather that assuming that '/root' will be writeable by this user.
+PYRALLEL_DEPLOY_SCRIPT_NAME = './pyrallel_deploy.sh'
+
+
+# TODO: finish me
+UBUNTU_DEPLOYMENT = """\
 # system packages
 apt-get -y install python-numpy python-scipy python-pip
 
@@ -38,47 +45,60 @@ def get_connection(provider_name, account_id=None, account_secret=None):
 
 
 def deploy_cluster(cloud, name='pyrallel', n_nodes=1, image=None, size=None,
-                   ssh_key=None):
+                   username=None, ssh_key=None, pyrallel_ssh_key=None):
     """Deploy a cluster with IPython engines
 
     cloud can be a libcloud connection or the name of a provider.
 
     Ubuntu only setup for now.
+
     """
     conn = get_connection(cloud) if isinstance(cloud, basestring) else cloud
 
-    if ssh_key is None:
-        ssh_key = os.path.expanduser('~/.ssh/id_rsa.pub')
+    steps = []
+    if pyrallel_ssh_key is not None:
+        # TODO: automatically generate a pyrallel dedicated key without
+        # password to be used for ipython tunnelling instead
+        steps.append(SSHKeyDeployment(open(pyrallel_ssh_key).read()))
 
-    sshkey_step = SSHKeyDeployment(open(ssh_key).read())
     # TODO: package a real deployment script
-    script_step = ScriptDeployment(UBUNTU_DEPLOYMENT)
-    deployment = MultiStepDeployment([
-        sshkey_step,
-        script_step,
-    ])
+    steps.append(ScriptDeployment(UBUNTU_DEPLOYMENT,
+                                  name=PYRALLEL_DEPLOY_SCRIPT_NAME))
+    deployment = MultiStepDeployment(steps)
 
-    image = image if image is not None else conn.list_images()[0]
-    size = size if size is not None else conn.list_sizes()[0]
+    if image is None:
+        ubuntu_images = [i for i in conn.list_images()
+                         if ("ubuntu" in i.name.lower()
+                             and "11.10" in i.name)]
+        if len(ubuntu_images) == 0:
+            raise RuntimeError('Could not find Ubuntu image')
+        image = ubuntu_images[0]
 
-    print "Deploying %d nodes" % n_nodes
-    # TODO: use parallel thread to launch the deployment
+    deploy_params = {
+        'name': name,
+        'image': image,
+        'size': size if size is not None else conn.list_sizes()[0],
+        'username': username,
+        'ssh_key': ssh_key,
+        'deploy': deployment,
+    }
+    print "Deploying cluster '%s' with %d nodes." % (name, n_nodes)
     t0 = time()
+    # TODO: find a way to run deployments concurrently
     for i in range(n_nodes):
-        conn.deploy_node(name=name, image=image, size=size,
-                         deploy=deployment)
-    print "Successfully deployed %d nodes in %ds" % (n_nodes, time() - t0)
+        conn.deploy_node(**deploy_params)
+    print "Successfully deployed %d nodes in %ds." % (n_nodes, time() - t0)
     return conn
 
 
 def destroy_cluster(cloud, name='pyrallel'):
     """Destroy all nodes with the provided name"""
     conn = get_connection(cloud) if isinstance(cloud, basestring) else cloud
-    nodes = [n for n in conn.list_nodes() if n.name == name]
-    print "Destroying %d nodes" % len(nodes)
-    # TODO: parallelize me!
+    nodes = [n for n in conn.list_nodes()
+             if n.name == name and n.state == NodeState.RUNNING]
+    print "Destroying cluster '%s' with %d nodes." % (name, len(nodes))
     t0 = time()
     for n in nodes:
         conn.destroy_node(n)
-    print "Successfully destroyed %d nodes in %ds" % (len(nodes), time() - t0)
+    print "Successfully destroyed %d nodes in %ds." % (len(nodes), time() - t0)
     return conn
