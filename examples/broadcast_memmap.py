@@ -25,7 +25,6 @@ import numpy as np
 from IPython import parallel
 from pyrallel.broadcast import bcast_memmap
 
-
 if len(sys.argv) > 1:
     profile = sys.argv[1]
 else:
@@ -33,14 +32,15 @@ else:
 
 rc = parallel.Client(profile=profile)
 dv = rc[:]
+with dv.sync_imports():
+    from hashlib import md5
 
 A = np.memmap("/tmp/pyrallel_sample_array", dtype=float,
               shape=(100, 128), mode='write', order='F')
+#A = np.empty(shape=(100, 128))
 
 rng = np.random.RandomState(10)
 A[:] = rng.random_integers(0, 100, A.shape)
-
-# A = np.asfortranarray(rng.random_integers(0, 100, A.shape))
 
 ars, engines_by_datastore = bcast_memmap(dv, 'B', A)
 
