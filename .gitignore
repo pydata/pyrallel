@@ -2,3 +2,5 @@ build
 *.egg-info
 *.pyc
 *.swp
+*.npy
+*.pkl

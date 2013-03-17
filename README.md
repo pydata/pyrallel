@@ -37,20 +37,25 @@ Fetch the development version (master branch) from:
 
 - https://github.com/scikit-learn/scikit-learn
 
+StarCluster `develop` branch and its `IPCluster` plugin is also required
+to easily startup a bunch of nodes with IPython.parallel setup.
 
 ## Patterns currently under investigation
-
-- Broadcast numerical arrays efficiently over the nodes and make them
-  available to concurrently running Python processes without making
-  copies in memory using memory-mapped files.
 
 - Asynchronous & randomized hyper-parameters search (a.k.a. Randomized Grid
   Search) for machine learning models
 
+- Share numerical arrays efficiently over the nodes and make them
+  available to concurrently running Python processes without making
+  copies in memory using memory-mapped files.
+
+- Distributed Random Forests fitting.
+
+- Ensembling heterogeneous library models.
+
 - Parallel implementation of online averaged models using a MPI AllReduce, for
   instance using MiniBatchKMeans on partitioned data.
 
-- Distributed Random Forests fitting.
 
 See the content of the `examples/` folder for more details.
 
