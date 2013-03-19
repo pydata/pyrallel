@@ -250,13 +250,18 @@ class RandomizedGridSeach(object):
             pl.xlabel(param_name)
             pl.ylabel("Val. Score")
 
-    def monitor(self):
+    def monitor(self, plot=False):
         try:
             while not self.done():
-                clear_output()
                 self.lb_view.spin()
+                if plot:
+                    import pylab as pl
+                    pl.clf()
+                    self.boxplot_parameters()
+                clear_output()
                 print(self.report())
-                self.boxplot_parameters()
+                if plot:
+                    pl.show()
                 sleep(1)
         except KeyboardInterrupt:
             print("Monitoring interrupted.")
