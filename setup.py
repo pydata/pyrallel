@@ -6,7 +6,7 @@ from distutils.core import setup
 
 setup(
     name="pyrallel",
-    version="0.1-dev",
+    version="0.3-dev",
     description="Experimental tools for parallel machine learning",
     maintainer="Olivier Grisel",
     mainainer_email="olivier.grisel@ensta.org",
