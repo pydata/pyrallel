@@ -62,7 +62,7 @@ See the content of the `examples/` folder for more details.
 
 ## License
 
-Simplified BSD.
+MIT
 
 
 ## History
