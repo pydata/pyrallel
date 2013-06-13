@@ -86,12 +86,14 @@ class RandomizedGridSeach(object):
 
     def map_tasks(self, f, skip_aborted=True):
         if skip_aborted:
-            return [f(task) for task_group in self.task_groups
-                            for task in task_group
-                            if not is_aborted(task)]
+            return [f(task)
+                    for task_group in self.task_groups
+                    for task in task_group
+                    if not is_aborted(task)]
         else:
-            return [f(task) for task_group in self.task_groups
-                            for task in task_group]
+            return [f(task)
+                    for task_group in self.task_groups
+                    for task in task_group]
 
     def abort(self):
         for task_group in self.task_groups:
@@ -136,7 +138,7 @@ class RandomizedGridSeach(object):
         del self._temp_files[:]
 
     def launch_for_splits(self, model, parameter_grid, cv_split_filenames,
-        pre_warm=True, collect_files_on_reset=False):
+                          pre_warm=True, collect_files_on_reset=False):
         """Launch a Grid Search on precomputed CV splits."""
 
         # Abort any existing processing and erase previous state
@@ -162,7 +164,8 @@ class RandomizedGridSeach(object):
             task_group = []
 
             for cv_split_filename in cv_split_filenames:
-                task = self.lb_view.apply(compute_evaluation,
+                task = self.lb_view.apply(
+                    compute_evaluation,
                     model, cv_split_filename, params=params)
                 task_group.append(task)
 
@@ -171,14 +174,16 @@ class RandomizedGridSeach(object):
         # Make it possible to chain method calls
         return self
 
-    def launch_for_arrays(self, model, parameter_grid, X, y, n_cv_iter=5, train_size=None,
-                          test_size=0.25, pre_warm=True, folder=".", name=None,
-                          random_state=None):
+    def launch_for_arrays(self, model, parameter_grid, X, y, n_cv_iter=5,
+                          train_size=None, test_size=0.25, pre_warm=True,
+                          folder=".", name=None, random_state=None):
         cv_split_filenames = persist_cv_splits(
-            X, y, n_cv_iter=n_cv_iter, train_size=train_size, test_size=test_size,
-            name=name, folder=folder, random_state=random_state)
-        return self.launch_for_splits(model, parameter_grid,
-            cv_split_filenames, pre_warm=pre_warm, collect_files_on_reset=True)
+            X, y, n_cv_iter=n_cv_iter, train_size=train_size,
+            test_size=test_size, name=name, folder=folder,
+            random_state=random_state)
+        return self.launch_for_splits(
+            model, parameter_grid, cv_split_filenames, pre_warm=pre_warm,
+            collect_files_on_reset=True)
 
     def find_bests(self, n_top=5):
         """Compute the mean score of the completed tasks"""
@@ -222,7 +227,8 @@ class RandomizedGridSeach(object):
 
         n_rows = len(self.parameter_grid)
         pl.figure()
-        for i, (param_name, param_values) in enumerate(self.parameter_grid.items()):
+        grid_items = self.parameter_grid.items()
+        for i, (param_name, param_values) in enumerate(grid_items):
             pl.subplot(n_rows, 1, i + 1)
             val_scores_per_value = []
             train_scores_per_value = []
@@ -240,10 +246,12 @@ class RandomizedGridSeach(object):
             offset = 0
             if display_train:
                 offset = 0.175
-                pl.boxplot(train_scores_per_value, widths=widths,
+                pl.boxplot(
+                    train_scores_per_value, widths=widths,
                     positions=positions - offset)
 
-            pl.boxplot(val_scores_per_value, widths=widths,
+            pl.boxplot(
+                val_scores_per_value, widths=widths,
                 positions=positions + offset)
 
             pl.xticks(np.arange(len(param_values)) + 1, param_values)

@@ -1,3 +1,8 @@
+"""Utilities for Memory Mapping cross validation folds
+
+Author: Olivier Grisel <olivier@ogrisel.com>
+Licensed: Simplified BSD
+"""
 import os
 from IPython.parallel import interactive
 
@@ -16,7 +21,7 @@ def persist_cv_splits(X, y, name=None, n_cv_iter=5, suffix="_cv_%03d.pkl",
         name = uuid.uuid4().get_hex()
 
     cv = ShuffleSplit(X.shape[0], n_iter=n_cv_iter,
-        test_size=test_size, random_state=random_state)
+                      test_size=test_size, random_state=random_state)
     cv_split_filenames = []
 
     for i, (train, test) in enumerate(cv):
