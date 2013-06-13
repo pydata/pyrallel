@@ -1,7 +1,7 @@
 """Utilities for Memory Mapping cross validation folds
 
 Author: Olivier Grisel <olivier@ogrisel.com>
-Licensed: Simplified BSD
+Licensed: MIT
 """
 import os
 from IPython.parallel import interactive

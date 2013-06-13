@@ -1,7 +1,10 @@
 build
+dist
 *.egg-info
 *.pyc
 *.swp
 *.npy
 *.pkl
 .DS_Store
+MANIFEST
+

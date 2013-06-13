@@ -1,7 +1,7 @@
 """Utilities for Parallel Model Selection with IPython
 
 Author: Olivier Grisel <olivier@ogrisel.com>
-Licensed: Simplified BSD
+Licensed: MIT
 """
 from time import sleep
 from collections import namedtuple
