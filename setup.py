@@ -9,7 +9,7 @@ setup(
     version="0.3-dev",
     description="Experimental tools for parallel machine learning",
     maintainer="Olivier Grisel",
-    mainainer_email="olivier.grisel@ensta.org",
+    maintainer_email="olivier.grisel@ensta.org",
     license="MIT",
     url='http://github.com/pydata/pyrallel',
     packages=[
