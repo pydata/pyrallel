@@ -31,13 +31,12 @@ class TaskManager(object):
         return map(f, self.all_tasks(skip_aborted=skip_aborted))
 
     def abort(self):
-        for task_group in self.task_groups:
-            for task in task_group:
-                if not task.ready() and not is_aborted(task):
-                    try:
-                        task.abort()
-                    except AssertionError:
-                        pass
+        for task in self.all_tasks(skip_aborted=True):
+            if not task.ready():
+                try:
+                    task.abort()
+                except AssertionError:
+                    pass
         return self
 
     def wait(self):
@@ -45,7 +44,7 @@ class TaskManager(object):
         return self
 
     def completed_tasks(self):
-        return [t for t in self.all_tasks(skip_aborted=True) if t.read()]
+        return [t for t in self.all_tasks(skip_aborted=True) if t.ready()]
 
     def completed(self):
         return sum(self.map_tasks(lambda t: t.ready(), skip_aborted=True))

@@ -10,3 +10,4 @@ MANIFEST
 coverage
 .ipynb_checkpoints
 
+examples/digits
