@@ -7,4 +7,6 @@ dist
 *.pkl
 .DS_Store
 MANIFEST
+coverage
+.ipynb_checkpoints
 
