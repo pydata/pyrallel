@@ -14,12 +14,7 @@ from scipy.stats import sem
 import numpy as np
 
 from sklearn.utils import check_random_state
-try:
-    # sklearn 0.14+
-    from sklearn.grid_search import ParameterGrid
-except ImportError:
-    # sklearn 0.13
-    from sklearn.grid_search import IterGrid as ParameterGrid
+from sklearn.grid_search import ParameterGrid
 
 from pyrallel.mmap_utils import warm_mmap_on_cv_splits
 from pyrallel.mmap_utils import persist_cv_splits
@@ -31,7 +26,9 @@ def is_aborted(task):
 
 @interactive
 def compute_evaluation(model, cv_split_filename, params=None,
-                       train_fraction=1.0, mmap_mode='r'):
+                       train_size=1.0, mmap_mode='r',
+                       scoring=None, dump_model=False,
+                       dump_predictions=False, dump_folder='.'):
     """Evaluate a model on a given CV split"""
     # All module imports should be executed in the worker namespace to make
     # possible to run an an engine node.
@@ -42,7 +39,13 @@ def compute_evaluation(model, cv_split_filename, params=None,
         cv_split_filename, mmap_mode=mmap_mode)
 
     # Slice a subset of the training set for plotting learning curves
-    n_samples_train = int(train_fraction * X_train.shape[0])
+    if train_size < 1.0:
+        # Assume that train_size is an relative fraction of the number of
+        # samples
+        n_samples_train = int(train_size * X_train.shape[0])
+    else:
+        # Assume that train_size is an absolute number of samples
+        n_samples_train = int(n_samples_train)
     X_train = X_train[:n_samples_train]
     y_train = y_train[:n_samples_train]
 
@@ -63,7 +66,7 @@ def compute_evaluation(model, cv_split_filename, params=None,
 
     # Wrap evaluation results in a simple tuple datastructure
     return (test_score, train_score, train_time,
-            train_fraction, params)
+            train_size, params)
 
 
 # Named tuple to collect evaluation results
