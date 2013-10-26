@@ -8,7 +8,6 @@ from collections import namedtuple
 import os
 
 from IPython.parallel import interactive
-from IPython.parallel import TaskAborted
 from IPython.display import clear_output
 from scipy.stats import sem
 import numpy as np
@@ -16,12 +15,11 @@ import numpy as np
 from sklearn.utils import check_random_state
 from sklearn.grid_search import ParameterGrid
 
+from pyrallel.common import TaskManager
 from pyrallel.mmap_utils import warm_mmap_on_cv_splits
 from pyrallel.mmap_utils import persist_cv_splits
 
 
-def is_aborted(task):
-    return isinstance(getattr(task, '_exception', None), TaskAborted)
 
 
 @interactive
@@ -78,7 +76,7 @@ Evaluation = namedtuple('Evaluation', (
     'parameters'))
 
 
-class RandomizedGridSeach(object):
+class RandomizedGridSeach(TaskManager):
     """"Async Randomized Parameter search."""
 
     def __init__(self, load_balanced_view, random_state=0):
@@ -86,47 +84,6 @@ class RandomizedGridSeach(object):
         self.lb_view = load_balanced_view
         self.random_state = random_state
         self._temp_files = []
-
-    def map_tasks(self, f, skip_aborted=True):
-        if skip_aborted:
-            return [f(task)
-                    for task_group in self.task_groups
-                    for task in task_group
-                    if not is_aborted(task)]
-        else:
-            return [f(task)
-                    for task_group in self.task_groups
-                    for task in task_group]
-
-    def abort(self):
-        for task_group in self.task_groups:
-            for task in task_group:
-                if not task.ready() and not is_aborted(task):
-                    try:
-                        task.abort()
-                    except AssertionError:
-                        pass
-        return self
-
-    def wait(self):
-        self.map_tasks(lambda t: t.wait(), skip_aborted=True)
-        return self
-
-    def completed(self):
-        return sum(self.map_tasks(lambda t: t.ready(), skip_aborted=True))
-
-    def done(self):
-        return all(self.map_tasks(lambda t: t.ready(), skip_aborted=True))
-
-    def total(self):
-        return sum(self.map_tasks(lambda t: 1, skip_aborted=False))
-
-    def progress(self):
-        c = self.completed()
-        if c == 0:
-            return 0.0
-        else:
-            return float(c) / self.total()
 
     def reset(self):
         # Abort any other previously scheduled tasks
