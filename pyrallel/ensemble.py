@@ -140,12 +140,14 @@ class EnsembleGrower(TaskManager):
             os.makedirs(folder)
 
         data_filename = os.path.join(folder, name + '_data.pkl')
+        data_filename = os.path.abspath(data_filename)
         self._temp_files.extend(joblib.dump((X, y), data_filename))
 
         for i in range(n_estimators):
             base_model = clone(self.base_model)
             model_filename = os.path.join(
                 folder, name + '_model_%03d_pkl' % i)
+            model_filename = os.path.abspath(model_filename)
             self.tasks.append(self.lb_view.apply(
                 train_model, base_model, data_filename, model_filename,
                 random_state=i))
