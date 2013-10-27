@@ -155,8 +155,9 @@ class EnsembleGrower(TaskManager):
         return self
 
     def report(self, n_top=5):
-        output = "Progress: {0:02d}% ({1:03d}/{2:03d})\n".format(
-            int(100 * self.progress()), self.completed(), self.total())
+        output = "Progress: {0:02d}% ({1:03d}/{2:03d}), elapsed: {3:0.3f}s\n".format(
+            int(100 * self.progress()), self.completed(), self.total(),
+            self.elapsed())
         return output
 
     def __repr__(self):

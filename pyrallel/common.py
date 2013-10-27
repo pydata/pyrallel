@@ -61,3 +61,7 @@ class TaskManager(object):
             return 0.0
         else:
             return float(c) / self.total()
+
+    def elapsed(self):
+        return max([t.elapsed
+                    for t in self.all_tasks(skip_aborted=False)])
