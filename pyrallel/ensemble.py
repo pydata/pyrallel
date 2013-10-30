@@ -29,8 +29,6 @@ def combine(all_ensembles):
         >>> big = combine(all_ensembles)
         >>> len(big.estimators_)
         12
-        >>> big.n_estimators_
-        12
         >>> big.score(X, y)
         1.0
 
@@ -40,7 +38,6 @@ def combine(all_ensembles):
     for ensemble in all_ensembles[1:]:
         final_ensemble.estimators_ += ensemble.estimators_
 
-    final_ensemble.n_estimators_ = len(final_ensemble.estimators_)
     return final_ensemble
 
 
@@ -56,8 +53,6 @@ def sub_ensemble(ensemble, n_estimators, seed=None):
         >>> small = sub_ensemble(big, 3)
         >>> len(small.estimators_)
         3
-        >>> small.n_estimators_
-        3
         >>> big.score(X, y)
         1.0
 
@@ -72,7 +67,6 @@ def sub_ensemble(ensemble, n_estimators, seed=None):
     final_ensemble.estimators_ = rng.sample(
         ensemble.estimators_, n_estimators)
 
-    final_ensemble.n_estimators_ = len(final_ensemble.estimators_)
     return final_ensemble
 
 
@@ -89,7 +83,7 @@ def train_model(model, data_filename, model_filename, random_state=None):
 
     # Clean the random_state attributes to reduce the amount
     # of useless numpy arrays that will be created on the
-    # filesystem (fixed in 0.15-git)
+    # filesystem (fixed upstream in sklearn 0.15-git)
     for estimator in model.estimators_:
         if (hasattr(estimator, 'tree_')
                 and hasattr(estimator.tree_, 'random_state')):
