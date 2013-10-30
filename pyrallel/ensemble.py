@@ -29,6 +29,8 @@ def combine(all_ensembles):
         >>> big = combine(all_ensembles)
         >>> len(big.estimators_)
         12
+        >>> big.n_estimators
+        12
         >>> big.score(X, y)
         1.0
 
@@ -37,6 +39,9 @@ def combine(all_ensembles):
 
     for ensemble in all_ensembles[1:]:
         final_ensemble.estimators_ += ensemble.estimators_
+
+    # Required in old versions of sklearn
+    final_ensemble.n_estimators = len(final_ensemble.estimators_)
 
     return final_ensemble
 
@@ -53,7 +58,9 @@ def sub_ensemble(ensemble, n_estimators, seed=None):
         >>> small = sub_ensemble(big, 3)
         >>> len(small.estimators_)
         3
-        >>> big.score(X, y)
+        >>> small.n_estimators
+        3
+        >>> small.score(X, y)
         1.0
 
     """
@@ -66,6 +73,9 @@ def sub_ensemble(ensemble, n_estimators, seed=None):
 
     final_ensemble.estimators_ = rng.sample(
         ensemble.estimators_, n_estimators)
+
+    # Required in old versions of sklearn
+    final_ensemble.n_estimators = len(final_ensemble.estimators_)
 
     return final_ensemble
 
