@@ -140,7 +140,7 @@ class EnsembleGrower(TaskManager):
         for i in range(n_estimators):
             base_model = clone(self.base_model)
             model_filename = os.path.join(
-                folder, name + '_model_%03d_pkl' % i)
+                folder, name + '_model_%03d.pkl' % i)
             model_filename = os.path.abspath(model_filename)
             self.tasks.append(self.lb_view.apply(
                 train_model, base_model, data_filename, model_filename,
