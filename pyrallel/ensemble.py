@@ -8,7 +8,6 @@ import uuid
 import os
 from random import Random
 from copy import copy
-from collections import namedtuple
 
 from IPython.parallel import interactive
 
@@ -90,9 +89,10 @@ def train_model(model, data_filename, model_filename, random_state=None):
 
     # Clean the random_state attributes to reduce the amount
     # of useless numpy arrays that will be created on the
-    # filesystem
+    # filesystem (fixed in 0.15-git)
     for estimator in model.estimators_:
-        if hasattr(estimator, 'tree_'):
+        if (hasattr(estimator, 'tree_')
+                and hasattr(estimator.tree_, 'random_state')):
             estimator.tree_.random_state = 0
 
     # Save the model back to the FS as it can be large
@@ -155,7 +155,8 @@ class EnsembleGrower(TaskManager):
         return self
 
     def report(self, n_top=5):
-        output = "Progress: {0:02d}% ({1:03d}/{2:03d}), elapsed: {3:0.3f}s\n".format(
+        output = ("Progress: {0:02d}% ({1:03d}/{2:03d}),"
+                  " elapsed: {3:0.3f}s\n").format(
             int(100 * self.progress()), self.completed(), self.total(),
             self.elapsed())
         return output
