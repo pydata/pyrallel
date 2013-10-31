@@ -16,6 +16,13 @@ from sklearn.externals import joblib
 from pyrallel.common import TaskManager
 
 
+# Python 2 & 3 compat
+try:
+    basestring
+except NameError:
+    basestring = (str, bytes)
+
+
 def combine(all_ensembles):
     """Combine the sub-estimators of a group of ensembles
 
@@ -81,7 +88,8 @@ def sub_ensemble(ensemble, n_estimators, seed=None):
 
 
 @interactive
-def train_model(model, data_filename, model_filename, random_state=None):
+def train_model(model, data_filename, model_filename=None,
+                random_state=None):
     from sklearn.externals import joblib
 
     # Memory map the data
@@ -100,9 +108,15 @@ def train_model(model, data_filename, model_filename, random_state=None):
             estimator.tree_.random_state = 0
 
     # Save the model back to the FS as it can be large
-    joblib.dump(model, model_filename)
+    if model_filename is not None:
+        joblib.dump(model, model_filename)
+        return model_filename
 
-    return model_filename
+    # TODO: add support for cloud blob stores as an alternative to
+    # filesystems.
+
+    # Return the tree back to the caller if (useful if the drive)
+    return model
 
 
 class EnsembleGrower(TaskManager):
@@ -135,7 +149,7 @@ class EnsembleGrower(TaskManager):
         del self._temp_files[:]
 
     def launch(self, X, y, n_estimators=1, pre_warm=True,
-               folder=".", name=None):
+               folder=".", name=None, dump_models=True):
         self.reset()
         if name is None:
             name = uuid.uuid4().get_hex()
@@ -149,9 +163,12 @@ class EnsembleGrower(TaskManager):
 
         for i in range(n_estimators):
             base_model = clone(self.base_model)
-            model_filename = os.path.join(
-                folder, name + '_model_%03d.pkl' % i)
-            model_filename = os.path.abspath(model_filename)
+            if dump_models:
+                model_filename = os.path.join(
+                    folder, name + '_model_%03d.pkl' % i)
+                model_filename = os.path.abspath(model_filename)
+            else:
+                model_filename = None
             self.tasks.append(self.lb_view.apply(
                 train_model, base_model, data_filename, model_filename,
                 random_state=i))
@@ -168,9 +185,14 @@ class EnsembleGrower(TaskManager):
     def __repr__(self):
         return self.report()
 
-    def aggregate_model(self):
-        ready_models = [joblib.load(task.get(), mmap_mode='r')
-                        for task in self.completed_tasks()]
+    def aggregate_model(self, mmap_mode='r'):
+        ready_models = []
+        for task in self.completed_tasks():
+            result = task.get()
+            if isinstance(result, basestring):
+                result = joblib.load(result, mmap_mode=mmap_mode)
+            ready_models.append(result)
+
         if not ready_models:
             return None
         return combine(ready_models)
