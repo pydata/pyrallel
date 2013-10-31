@@ -14,6 +14,7 @@ from IPython.parallel import interactive
 from sklearn.base import clone
 from sklearn.externals import joblib
 from pyrallel.common import TaskManager
+from pyrallel.mmap_utils import host_dump
 
 
 # Python 2 & 3 compat
@@ -148,7 +149,7 @@ class EnsembleGrower(TaskManager):
             os.unlink(filename)
         del self._temp_files[:]
 
-    def launch(self, X, y, n_estimators=1, pre_warm=True,
+    def launch(self, X, y, sample_weight=None, n_estimators=1, pre_warm=True,
                folder=".", name=None, dump_models=True):
         self.reset()
         if name is None:
@@ -159,7 +160,13 @@ class EnsembleGrower(TaskManager):
 
         data_filename = os.path.join(folder, name + '_data.pkl')
         data_filename = os.path.abspath(data_filename)
-        self._temp_files.extend(joblib.dump((X, y), data_filename))
+
+        # Dispatch the data files to all the nodes
+        host_dump(self.lb_view.client, (X, y, sample_weight), data_filename,
+                  pre_warm=pre_warm)
+
+        # TODO: handle temporary files on all remote workers
+        #self._temp_files.extend(dumped_filenames)
 
         for i in range(n_estimators):
             base_model = clone(self.base_model)

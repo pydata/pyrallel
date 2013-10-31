@@ -5,6 +5,7 @@ Licensed: MIT
 """
 
 from IPython.parallel import TaskAborted
+from IPython.parallel import interactive
 
 
 def is_aborted(task):
@@ -65,3 +66,20 @@ class TaskManager(object):
     def elapsed(self):
         return max([t.elapsed
                     for t in self.all_tasks(skip_aborted=False)])
+
+
+def get_host_view(client):
+    """Return an IPython parallel direct view with one engine per host."""
+    # First step: query cluster to fetch one engine id per host
+    all_engines = client[:]
+
+    @interactive
+    def hostname():
+        import socket
+        return socket.gethostname()
+
+    hostnames = all_engines.apply(hostname).get_dict()
+    one_engine_per_host = dict((hostname, engine_id)
+                               for engine_id, hostname
+                               in hostnames.items())
+    return client[one_engine_per_host.values()]
