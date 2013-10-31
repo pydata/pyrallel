@@ -22,8 +22,6 @@ def persist_cv_splits(X, y, name=None, n_cv_iter=5, suffix="_cv_%03d.pkl",
     if name is None:
         name = uuid.uuid4().get_hex()
 
-    host_view = get_host_view(client)
-
     cv = ShuffleSplit(X.shape[0], n_iter=n_cv_iter,
                       test_size=test_size, random_state=random_state)
     cv_split_filenames = []

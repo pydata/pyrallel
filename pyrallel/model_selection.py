@@ -16,6 +16,7 @@ from sklearn.utils import check_random_state
 from sklearn.grid_search import ParameterGrid
 
 from pyrallel.common import TaskManager
+from pyrallel.common import is_aborted
 from pyrallel.mmap_utils import warm_mmap_on_cv_splits
 from pyrallel.mmap_utils import persist_cv_splits
 
@@ -37,13 +38,13 @@ def compute_evaluation(model, cv_split_filename, params=None,
         cv_split_filename, mmap_mode=mmap_mode)
 
     # Slice a subset of the training set for plotting learning curves
-    if train_size < 1.0:
+    if train_size <= 1.0:
         # Assume that train_size is an relative fraction of the number of
         # samples
         n_samples_train = int(train_size * X_train.shape[0])
     else:
         # Assume that train_size is an absolute number of samples
-        n_samples_train = int(n_samples_train)
+        n_samples_train = int(train_size)
     X_train = X_train[:n_samples_train]
     y_train = y_train[:n_samples_train]
 
