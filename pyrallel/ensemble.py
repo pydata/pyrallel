@@ -94,11 +94,14 @@ def train_model(model, data_filename, model_filename=None,
     from sklearn.externals import joblib
 
     # Memory map the data
-    X, y = joblib.load(data_filename, mmap_mode='r')
+    X, y, sample_weight = joblib.load(data_filename, mmap_mode='r')
 
     # Train the model
     model.set_params(random_state=random_state)
-    model.fit(X, y)
+    if sample_weight is not None:
+        model.fit(X, y, sample_weight=sample_weight)
+    else:
+        model.fit(X, y)
 
     # Clean the random_state attributes to reduce the amount
     # of useless numpy arrays that will be created on the
