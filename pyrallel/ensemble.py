@@ -48,9 +48,9 @@ def combine(all_ensembles):
 
     """
     final_ensemble = copy(all_ensembles[0])
-    final_ensemble.estimators_ = final_ensemble.estimators_[:]
+    final_ensemble.estimators_ = []
 
-    for ensemble in all_ensembles[1:]:
+    for ensemble in all_ensembles:
         final_ensemble.estimators_ += ensemble.estimators_
 
     # Required in old versions of sklearn
