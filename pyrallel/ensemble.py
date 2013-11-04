@@ -153,7 +153,7 @@ class EnsembleGrower(TaskManager):
         del self._temp_files[:]
 
     def launch(self, X, y, sample_weight=None, n_estimators=1, pre_warm=True,
-               folder=".", name=None, dump_models=True):
+               folder=".", name=None, dump_models=False):
         self.reset()
         if name is None:
             name = uuid.uuid4().get_hex()
