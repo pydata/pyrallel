@@ -42,8 +42,13 @@ def combine(all_ensembles):
         >>> big.score(X, y)
         1.0
 
+        >>> big2 = combine(all_ensembles)
+        >>> len(big2.estimators_)
+        12
+
     """
     final_ensemble = copy(all_ensembles[0])
+    final_ensemble.estimators_ = final_ensemble.estimators_[:]
 
     for ensemble in all_ensembles[1:]:
         final_ensemble.estimators_ += ensemble.estimators_
