@@ -91,6 +91,8 @@ def host_dump(client, payload, target_filename, host_view=None, pre_warm=True):
     if host_view is None:
         host_view = get_host_view(client)
 
+    client = host_view.client
+
     @interactive
     def dump_payload(payload, filename):
         from sklearn.externals import joblib
@@ -102,15 +104,14 @@ def host_dump(client, payload, target_filename, host_view=None, pre_warm=True):
 
         # Do a first dispatch to the first node to avoid concurrent write in
         # case of shared filesystem
-        host_view[first_id].apply_sync(dump_payload, payload, target_filename)
+        client[first_id].apply_sync(dump_payload, payload, target_filename)
 
         # Refetch the list of engine ids where the file is missing
         missing_ids = _missing_file_engine_ids(host_view, target_filename)
 
         # Restrict the view to hosts where the target data file is still
         # missing for the final dispatch
-        host_view[missing_ids].apply_sync(
-            dump_payload, payload, target_filename)
+        client[missing_ids].apply_sync(dump_payload, payload, target_filename)
 
     if pre_warm:
         warm_mmap(client, [target_filename], host_view=host_view)
