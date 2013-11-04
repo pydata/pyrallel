@@ -64,8 +64,10 @@ class TaskManager(object):
             return float(c) / self.total()
 
     def elapsed(self):
-        return max([t.elapsed
-                    for t in self.all_tasks(skip_aborted=False)])
+        all_tasks = self.all_tasks(skip_aborted=False)
+        if not all_tasks:
+            return 0.0
+        return max([t.elapsed for t in all_tasks])
 
 
 def get_host_view(client):
