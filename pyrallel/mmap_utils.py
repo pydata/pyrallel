@@ -96,7 +96,7 @@ def host_dump(client, payload, target_filename, host_view=None, pre_warm=True):
     @interactive
     def dump_payload(payload, filename):
         from sklearn.externals import joblib
-        return jolib.dump(payload, filename)
+        return joblib.dump(payload, filename)
 
     missing_ids = _missing_file_engine_ids(host_view, target_filename)
     if missing_ids:
