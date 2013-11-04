@@ -55,7 +55,8 @@ def warm_mmap(client, data_filenames, host_view=None):
         for filename in filenames:
             arrays = joblib.load(filename, mmap_mode='r')
             for array in arrays:
-                array.sum()  # trigger the disk read
+                if hasattr(array, 'max'):
+                    array.max()  # trigger the disk read
 
     data_filenames = [os.path.abspath(f) for f in data_filenames]
     host_view.apply_sync(load_in_memory, data_filenames)
