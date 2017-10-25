@@ -1,5 +1,9 @@
 # Pyrallel - Parallel Data Analytics in Python
 
+**Unmaintained warning**: this project has no future, use [dask](
+https://dask.pydata.org/en/latest/) and `dask-distributed` instead.
+
+
 **Overview**: experimental project to investigate distributed computation
 patterns for machine learning and other semi-interactive data analytics
 tasks.
