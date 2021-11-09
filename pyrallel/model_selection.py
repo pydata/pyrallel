@@ -90,7 +90,7 @@ class RandomizedGridSeach(TaskManager):
         # Abort any other previously scheduled tasks
         self.abort()
 
-        # Schedule a new batch of evalutation tasks
+        # Schedule a new batch of evaluation tasks
         self.task_groups, self.all_parameters = [], []
 
         # Collect temporary files:
