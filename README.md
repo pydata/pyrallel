@@ -22,7 +22,7 @@ tasks.
 
 - do not try to invent new set of high level programming abstractions
   (yet): use a low level programming model (IPython.parallel) to finely
-  control the cluster elements and messages transfered and help identify
+  control the cluster elements and messages transferred and help identify
   what are the practical underlying constraints in distributed machine
   learning setting.
 
